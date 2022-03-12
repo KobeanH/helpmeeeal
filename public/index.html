@@ -1,8 +1,11 @@
 <body>
 <div id="map" style="height:400px;width:600px"></div> <!-- 地図を表示する領域 -->
-<p><button onclick="initMap()">近所のレストランを検索</button></p>
+<p><button onclick="getLocation()">近所のレストランを検索</button></p>
 <script>
-function initMap() {
+   var map;
+    var infowindow;
+    function getLocation(){
+
         // 位置情報を取得する
         navigator.geolocation.getCurrentPosition(
             function(position) {
@@ -17,54 +20,83 @@ function initMap() {
                 zoom: 15
                 });
 
-  });
+                //現在地の緯度経度を中心にマップに円を描く
+                var circleOptions = {
+                    map: map,
+                    center: new google.maps.LatLng( latitude , longitude ),
+                    radius: 2000,//1km
+                    strokeColor: "#009933",
+                    strokeOpacity: 1,
+                    strokeWeight: 1,
+                    fillColor: "#00ffcc",
+                    fillOpacity: 0.35
+                };
+                circle = new google.maps.Circle(circleOptions);
+
+                //現在地から1キロ以内のレストランを検索
+                infowindow = new google.maps.InfoWindow();
+                var service = new google.maps.places.PlacesService(map);
+                service.nearbySearch({
+                  location: latlng,
+                  radius: 1000,//1km
+                  name: ['イタリアン']
+                }, callback);
+            },function(error) {
+                // 失敗時の処理
+                alert('エラー：' + error);
+        });
+    }
+
+    //地図上にマーカーをプロット
+    function callback(results, status) {
+        if (status === google.maps.places.PlacesServiceStatus.OK) {
+          for (var i = 0; i < results.length; i++) {
+            createMarker(results[i]);
+          }
+        }
+    }
+
+    //地図上のマーカーをクリックした際の動作
+    function createMarker(place) {
+        var placeLoc = place.geometry.location;
+        var marker = new google.maps.Marker({
+        map: map,
+        position: place.geometry.location,
+ });
+
+        //吹き出しの中身
+        google.maps.event.addListener(marker, 'click', function() {
+          infowindow.setContent('<div><strong>' + place.name + '</strong><br>' + '評価: ' + place.rating  + '</div>');
+          infowindow.open(map, this);
 
 
-
-
-  const request = {
-    placeId: "ChIJN1t_tDeuEmsRUsoyG83frY4",
-    fields: ["name", "formatted_address", "place_id", "geometry", "opening_hours" ],
+            const request = {
+    placeId: place.place_id,
+    fields: ["name", "formatted_address", "reviews","place_id", "geometry", "opening_hours","photos", "rating",],
   };
-  const infowindow = new google.maps.InfoWindow();
+  // const infowindow = new google.maps.InfoWindow();
   const service = new google.maps.places.PlacesService(map);
 
-  service.getDetails(request, (place, status) => {
+  service.getDetails(request, (placee, status) => {
     if (
       status === google.maps.places.PlacesServiceStatus.OK &&
-      place &&
-      place.geometry &&
-      place.geometry.location
+      placee &&
+      placee.geometry &&
+      placee.geometry.location
     ) {
       const marker = new google.maps.Marker({
         map,
-        position: place.geometry.location,
-      });
-
-      google.maps.event.addListener(marker, "click", () => {
-        const content = document.createElement("div");
-        const nameElement = document.createElement("h2");
-
-        nameElement.textContent = place.name;
-        content.appendChild(nameElement);
-
-        const placeIdElement = document.createElement("p");
-
-        placeIdElement.textContent = place.place_id;
-        content.appendChild(placeIdElement);
-
-        const placeAddressElement = document.createElement("p");
-
-        placeAddressElement.textContent = place.formatted_address;
-        content.appendChild(placeAddressElement);
-        infowindow.setContent(content);
-        infowindow.open(map, marker);
-         console.log(place);
+        position: placee.geometry.location,
       });
     }
+    console.log(placee);
   });
 
-}
+
+        });
+
+
+};
 
 </script>
 <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBWSru6gVgE1NeqHhMz2JL7JBOgynC9mnQ&callback=initMap&libraries=places" async defer></script><!-- YOUR_API_KEYの部分は取得した APIキーで置き換えます。また Placesを使用する場合は最後に「&libraries=places」を追加する必要があります。 -->
