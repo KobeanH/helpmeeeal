@@ -1,262 +1,185 @@
 <body>
   <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+
   <div id="map" style="height:400px;width:600px"></div> <!-- 地図を表示する領域 -->
   <p><button onclick="getLocation()">近所のレストランを検索</button></p>
+
+
   <script>
     var map;
     var infowindow;
     function getLocation() {
 
-      //   // 位置情報を取得する
-      //   navigator.geolocation.getCurrentPosition(
-      //     function (position) {
+      // 位置情報を取得する
+      navigator.geolocation.getCurrentPosition(
+        function (position) {
 
-      //       // 現在地の緯度経度所得
-      //       var latitude = position.coords.latitude;
-      //       var longitude = position.coords.longitude;
-      //       var latlng = new google.maps.LatLng(latitude, longitude);
-      //       // 現在地の緯度経度を中心にマップを生成
-      //       map = new google.maps.Map(document.getElementById('map'), {
-      //         center: latlng,
-      //         zoom: 15
-      //       });
+          // 現在地の緯度経度所得
+          var latitude = position.coords.latitude;
+          var longitude = position.coords.longitude;
+          var latlng = new google.maps.LatLng(latitude, longitude);
 
-      //       //現在地の緯度経度を中心にマップに円を描く
-      //       var circleOptions = {
-      //         map: map,
-      //         center: new google.maps.LatLng(latitude, longitude),
-      //         radius: 2000,//1km
-      //         strokeColor: "#009933",
-      //         strokeOpacity: 1,
-      //         strokeWeight: 1,
-      //         fillColor: "#00ffcc",
-      //         fillOpacity: 0.35
-      //       };
-      //       circle = new google.maps.Circle(circleOptions);
+          // 現在地の緯度経度を中心にマップを生成
+          map = new google.maps.Map(document.getElementById('map'), {
+            center: latlng,
+            zoom: 15
+          });
 
-      //       //現在地から1キロ以内のレストランを検索
-      //       infowindow = new google.maps.InfoWindow();
-      //       var service = new google.maps.places.PlacesService(map);
-      //       service.nearbySearch({
-      //         location: latlng,
-      //         radius: 1000,//1km
-      //         name: ['イタリアン']
-      //       }, callback);
-      //     }, function (error) {
-      //       // 失敗時の処理
-      //       alert('エラー：' + error);
-      //     });
-      // }
+          var marker = new google.maps.Marker({
+            map: map,             // Mapクラスオブジェクト
+            position: latlng   // LatLngクラスオブジェクト
+          });
 
-      // //地図上にマーカーをプロット
-      // function callback(results, status) {
-      //   if (status === google.maps.places.PlacesServiceStatus.OK) {
-      //     for (var i = 0; i < results.length; i++) {
-      //       createMarker(results[i]);
-      //     }
-      //   }
-      // }
+          //現在地の緯度経度を中心にマップに円を描く
+          var circleOptions = {
+            map: map,
+            center: new google.maps.LatLng(latitude, longitude),
+            radius: 2000,//1km
+            strokeColor: "#009933",
+            strokeOpacity: 1,
+            strokeWeight: 1,
+            fillColor: "#00ffcc",
+            fillOpacity: 0.35
+          };
 
-      // //地図上のマーカーをクリックした際の動作
-      // function createMarker(place) {
-      //   var placeLoc = place.geometry.location;
-      //   var marker = new google.maps.Marker({
-      //     map: map,
-      //     position: place.geometry.location,
-      //   });
+          circle = new google.maps.Circle(circleOptions);
 
-      //   //吹き出しの中身
-      //   google.maps.event.addListener(marker, 'click', function () {
-      //     infowindow.setContent('<div><strong>' + place.name + '</strong><br>' + '評価: ' + place.rating + '</div>');
-      //     infowindow.open(map, this);
+          //現在地から1キロ以内のレストランを検索
+          infowindow = new google.maps.InfoWindow();
+          var service = new google.maps.places.PlacesService(map);
+
+          service.nearbySearch({
+            location: latlng,
+            radius: 1000,//1km
+            name: ['カレー'],
+          }, callback);
 
 
-      //     const request = {
-      //       placeId: place.place_id,
-      //       fields: ["name", "formatted_address", "reviews", "place_id", "geometry", "opening_hours", "photos", "rating",],
-      //     };
-      //     // const infowindow = new google.maps.InfoWindow();
-      //     const service = new google.maps.places.PlacesService(map);
+          //地図上にマーカーをプロット
+          function callback(results, status) {
+            if (status === google.maps.places.PlacesServiceStatus.OK) {
+              for (var i = 0; i < results.length; i++) {
+                createMarker(results[i], i + 1);
+              }
 
-      //     service.getDetails(request, (placee, status) => {
-      //       if (
-      //         status === google.maps.places.PlacesServiceStatus.OK &&
-      //         placee &&
-      //         placee.geometry &&
-      //         placee.geometry.location
-      //       ) {
-      //         const marker = new google.maps.Marker({
-      //           map,
-      //           position: placee.geometry.location,
-      //         });
-      //       }
-      //       console.log(placee);
-      //     });
+              var aaa = results.map(function (value) {
 
+                //配列の各要素を2倍にする
+                return value.geometry.location
 
-      //   });
+              });
 
-      var distanceMatrixService = new google.maps.DistanceMatrixService();
+              console.log(results)
+              console.log(aaa)
 
-      // 出発点
-      var origns = [
-        new google.maps.LatLng(35.6, 139.7),
-      ]
-      // 到着点
-      var destinations = [
-        new google.maps.LatLng(35.8, 140.5),
-      ];
+              var distanceMatrixService = new google.maps.DistanceMatrixService();
 
-      // DistanceMatrix の実行
-      distanceMatrixService.getDistanceMatrix({
-        origins: origns, // 出発地点
-        destinations: destinations, // 到着地点
-        travelMode: google.maps.TravelMode.WALKING, // 車モード or 徒歩モード
-        drivingOptions: { // 車モードの時のみ有効
-          departureTime: new Date('2017/5/5 10:00:00'), // 2017年5月5日
-          trafficModel: google.maps.TrafficModel.BEST_GUESS // 最適な検索
-        }
-      }, function (response, status) {
-        if (status == google.maps.DistanceMatrixStatus.OK) {
+              // 出発点
+              var origns = [latlng];
+              // 到着点
+              var destinations = aaa//ここにfunction callback(results, status)のresultsを格納したい
 
-          // 出発地点と到着地点の住所（配列）を取得
-          var origins = response.originAddresses;
-          var destinations = response.destinationAddresses;
+              console.log(origns)
 
-          // 出発地点でループ
-          for (var i = 0; i < origins.length; i++) {
-            // 出発地点から到着地点への計算結果を取得
-            var results = response.rows[i].elements;
+              // DistanceMatrix の実行
+              distanceMatrixService.getDistanceMatrix({
+                origins: origns, // 出発地点
+                destinations: destinations, // 到着地点
+                travelMode: 'WALKING', // 車モード or 徒歩モード
+              }, function (response, status) {
+                if (status == google.maps.DistanceMatrixStatus.OK) {
 
-            // 到着地点でループ
-            for (var j = 0; j < results.length; j++) {
-              var from = origins[i]; // 出発地点の住所
-              var to = destinations[j]; // 到着地点の住所
-              var duration = results[j].duration.value; // 時間
-              var distance = results[j].distance.value; // 距離
-              console.log("{},{},{},{}", from, to, duration, distance);
+                  // 出発地点と到着地点の住所（配列）を取得
+                  var origins = response.originAddresses;
+                  var destinations = response.destinationAddresses;
+
+                  // 出発地点でループ
+                  for (var i = 0; i < origins.length; i++) {
+                    // 出発地点から到着地点への計算結果を取得
+                    var results = response.rows[i].elements;
+
+                    // 到着地点でループ
+                    for (var j = 0; j < results.length; j++) {
+                      var from = origins[i]; // 出発地点の住所
+                      var to = destinations[j]; // 到着地点の住所
+                      var duration = results[j].duration.value; // 時間
+                      var distance = results[j].distance.text; // 距離
+                      console.log(from, to, duration, distance);
+                    }
+                  }
+                }
+                console.log(response);
+              });
             }
+            console.log(results)
           }
-        }
-      });
+
+          //地図上のマーカーをクリックした際の動作
+          function createMarker(place, index) {
+            var placeLoc = place.geometry.location;
+            var marker = new google.maps.Marker({
+              map: map,
+              position: place.geometry.location,
+              icon: {
+                fillColor: "black",                //塗り潰し色
+                fillOpacity: 0.8,                    //塗り潰し透過率
+                path: google.maps.SymbolPath.CIRCLE, //円を指定
+                scale: 13,                           //円のサイズ
+                strokeColor: "#fff",              //枠の色
+                strokeWeight: 1.0                    //枠の透過率
+              },
+              label: {
+                text: String(index),         //ラベル文字
+                color: '#fff',        //ラベル文字の色
+                fontFamily: 'sans-serif',  //フォント
+                fontWeight: 'bold',        //フォントの太さ
+                fontSize: '14px'           //フォントのサイズ
+              }
+            });
+
+
+
+
+            const request = {
+              placeId: place.place_id,
+              fields: ["name", "formatted_address", "reviews", "place_id", "geometry", "opening_hours", "photos", "rating",],
+            };
+            // const infowindow = new google.maps.InfoWindow();
+            const service = new google.maps.places.PlacesService(map);
+
+            service.getDetails(request, (placee, status) => {
+              if (
+                status === google.maps.places.PlacesServiceStatus.OK &&
+                placee &&
+                placee.geometry &&
+                placee.geometry.location
+              ) {
+                console.log(placee);
+              }
+
+            });
+
+
+
+          }
+
+
+
+        }, function (error) {
+          // 失敗時の処理
+          alert('エラー：' + error);
+        });
+
+
+
+
 
     }
 
 
 
   </script>
-  <script
-    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBWSru6gVgE1NeqHhMz2JL7JBOgynC9mnQ&callback=initMap&libraries=places"
-    async defer></script>
-</body>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<body>
-  <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
-<table cellpadding="0" cellspacing="3">
-  <tr>
-    <td colspan="2">
-      Source:
-      <input type="text" id="txtSource" value="Bandra, Mumbai, India" style="width: 200px" />
-      &nbsp; Destination:
-      <input type="text" id="txtDestination" value="Andheri, Mumbai, India" style="width: 200px" />
-      <br />
-      <input type="button" value="Get Route" onclick="GetRoute()" />
-      <hr />
-    </td>
-  </tr>
-  <tr>
-    <td colspan="2">
-      <div id="dvDistance">
-      </div>
-    </td>
-  </tr>
-  <tr>
-    <td>
-      <div id="dvMap" style="width: 500px; height: 500px">
-      </div>
-    </td>
-    <td>
-      <div id="dvPanel" style="width: 500px; height: 500px">
-      </div>
-    </td>
-  </tr>
-</table>
-
-<script type="text/javascript" src="http://maps.googleapis.com/maps/api/js?sensor=false&libraries=places"></script>
-<script type="text/javascript">
-  var source, destination;
-  var directionsDisplay;
-  var directionsService = new google.maps.DirectionsService();
-  google.maps.event.addDomListener(window, 'load', function () {
-    new google.maps.places.SearchBox(document.getElementById('txtSource'));
-    new google.maps.places.SearchBox(document.getElementById('txtDestination'));
-    directionsDisplay = new google.maps.DirectionsRenderer({ 'draggable': true });
-  });
-
-  function GetRoute() {
-    var mumbai = new google.maps.LatLng(18.9750, 72.8258);
-    var mapOptions = {
-      zoom: 7,
-      center: mumbai
-    };
-    map = new google.maps.Map(document.getElementById('dvMap'), mapOptions);
-    directionsDisplay.setMap(map);
-    directionsDisplay.setPanel(document.getElementById('dvPanel'));
-
-    //*********DIRECTIONS AND ROUTE**********************//
-    source = document.getElementById("txtSource").value;
-    destination = document.getElementById("txtDestination").value;
-
-    var request = {
-      origin: source,
-      destination: destination,
-      travelMode: google.maps.TravelMode.DRIVING
-    };
-    directionsService.route(request, function (response, status) {
-      if (status == google.maps.DirectionsStatus.OK) {
-        directionsDisplay.setDirections(response);
-      }
-    });
-
-    //*********DISTANCE AND DURATION**********************//
-    var service = new google.maps.DistanceMatrixService();
-    service.getDistanceMatrix({
-      origins: [source],
-      destinations: [destination],
-      travelMode: google.maps.TravelMode.DRIVING,
-      unitSystem: google.maps.UnitSystem.METRIC,
-      avoidHighways: false,
-      avoidTolls: false
-    }, function (response, status) {
-      if (status == google.maps.DistanceMatrixStatus.OK && response.rows[0].elements[0].status != "ZERO_RESULTS") {
-        var distance = response.rows[0].elements[0].distance.text;
-        var duration = response.rows[0].elements[0].duration.text;
-        var dvDistance = document.getElementById("dvDistance");
-        dvDistance.innerHTML = "";
-        dvDistance.innerHTML += "Distance: " + distance + "<br />";
-        dvDistance.innerHTML += "Duration:" + duration;
-
-      } else {
-        alert("Unable to find the distance via road.");
-      }
-    });
-  }
-</script>
   <script
     src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBWSru6gVgE1NeqHhMz2JL7JBOgynC9mnQ&callback=initMap&libraries=places"
     async defer></script>
